@@ -1,7 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTranslation } from '../lib/i18n';
-import { User, TabType } from '../types';
+import { User, TabType, DEFAULT_USERS } from '../types';
 import { UserPlus, Shield, Mail, Trash2, Edit2, Check, X, Clock, Activity, Eye, EyeOff } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -15,56 +15,9 @@ export default function Admin() {
   const { language } = useSettings();
   const t = useTranslation(language);
 
-  const defaultUsers: User[] = [
-    { 
-      id: '1', 
-      name: 'A. Kamau', 
-      username: 'a.kamau',
-      password: 'admin123',
-      role: 'Super Admin', 
-      email: 'a.kamau@ishmatek.com',
-      permissions: [...ALL_TABS],
-      status: 'Active',
-      lastLogin: '2 mins ago'
-    },
-    { 
-      id: '2', 
-      name: 'J. Uwimana', 
-      username: 'j.uwimana',
-      password: 'tech123',
-      role: 'Technician', 
-      email: 'j.uwimana@ishmatek.com',
-      permissions: ['overview', 'monitor', 'registry', 'floormap'],
-      status: 'Active',
-      lastLogin: '1 hour ago'
-    },
-    { 
-      id: '3', 
-      name: 'M. Nzabonimpa', 
-      username: 'm.nzabonimpa',
-      password: 'oper123',
-      role: 'Operator', 
-      email: 'm.nzabonimpa@ishmatek.com',
-      permissions: ['overview', 'monitor', 'alerts'],
-      status: 'Inactive',
-      lastLogin: '2 days ago'
-    },
-    { 
-      id: '4', 
-      name: 'S. Ishimwe', 
-      username: 's.ishimwe',
-      password: 'admin123',
-      role: 'Admin', 
-      email: 's.ishimwe@ishmatek.com',
-      permissions: ['overview', 'monitor', 'admin', 'settings'],
-      status: 'Active',
-      lastLogin: 'Just now'
-    },
-  ];
-
   const [users, setUsers] = useState<User[]>(() => {
     const saved = localStorage.getItem('nexus_admin_users');
-    return saved ? JSON.parse(saved) : defaultUsers;
+    return saved ? JSON.parse(saved) : DEFAULT_USERS;
   });
 
   useEffect(() => {

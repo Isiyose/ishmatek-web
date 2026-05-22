@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { 
   Database, 
 } from 'lucide-react';
-import { TabType, DashboardState } from './types';
+import { TabType, DashboardState, seedDefaultUsers } from './types';
 import Overview from './components/Overview';
 import Configuration from './components/Configuration';
 import Alerts from './components/Alerts';
@@ -24,6 +24,8 @@ import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useSettings } from './contexts/SettingsContext';
 import { useTranslation } from './lib/i18n';
+
+seedDefaultUsers();
 
 export default function App() {
   const { language } = useSettings();
