@@ -109,6 +109,8 @@ export const translations: Record<Language, Record<string, string>> = {
     min: 'Min',
     max: 'Max',
     warn: 'Warn %',
+    username: 'Username',
+    password: 'Password',
   },
   fr: {
     overview: 'Vue d\'ensemble',
@@ -218,6 +220,8 @@ export const translations: Record<Language, Record<string, string>> = {
     min: 'Min',
     max: 'Max',
     warn: 'Avert. %',
+    username: 'Nom d\'utilisateur',
+    password: 'Mot de passe',
   },
   sw: {
     overview: 'Maelezo ya jumla',
@@ -327,6 +331,8 @@ export const translations: Record<Language, Record<string, string>> = {
     min: 'Chini',
     max: 'Juu',
     warn: 'Onya %',
+    username: 'Jina la mtumiaji',
+    password: 'Nenosiri',
   },
   rw: {
     overview: 'Incamake',
@@ -436,6 +442,8 @@ export const translations: Record<Language, Record<string, string>> = {
     min: 'Hasi',
     max: 'Hejuru',
     warn: 'Onya %',
+    username: 'Izina ry\'umukoresha',
+    password: 'Ijambo ry\'ibanga',
   },
 };
 

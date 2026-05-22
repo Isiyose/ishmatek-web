@@ -48,6 +48,31 @@ export default function App() {
 
   const handleLogin = (u: string, p: string, coords?: { lat: number, lng: number }) => {
     if (u && p) {
+      const savedUsers = localStorage.getItem('nexus_admin_users');
+      if (savedUsers) {
+        const adminUsers = JSON.parse(savedUsers);
+        const matched = adminUsers.find(
+          (user: any) =>
+            (user.email === u || user.username === u) &&
+            user.password === p &&
+            user.status === 'Active'
+        );
+        if (matched) {
+          const userData = {
+            name: matched.name,
+            role: matched.role,
+            lat: coords?.lat,
+            lng: coords?.lng,
+            lastSeen: 'Active now',
+            status: 'online'
+          };
+          setUser(userData);
+          setIsLoggedIn(true);
+          localStorage.setItem('nexus_user', JSON.stringify(userData));
+          return true;
+        }
+      }
+
       const userData = { 
         name: u.includes('@') ? u.split('@')[0] : u, 
         role: 'Senior Operator',

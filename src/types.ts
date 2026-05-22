@@ -21,6 +21,8 @@ export type Theme = 'dark' | 'light';
 export interface User {
   id: string;
   name: string;
+  username: string;
+  password: string;
   role: 'Super Admin' | 'Admin' | 'Operator' | 'Technician' | 'User';
   email: string;
   permissions: TabType[];
