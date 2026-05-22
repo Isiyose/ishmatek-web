@@ -1,0 +1,133 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net Default-Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Global Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && (request.auth.token.email_verified == true);
+    }
+
+    function isAdmin() {
+      return isEmailVerified() && request.auth.token.email == 'ishimwe.jeanluc48@gmail.com';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Blueprints ---
+    function isValidDevice(data) {
+      return data.keys().hasAll(['id', 'name', 'type', 'lat', 'lng', 'status'])
+        && data.keys().size() == 6
+        && data.id is string && data.id.size() <= 128
+        && data.name is string && data.name.size() <= 128
+        && data.type is string && (data.type == 'air' || data.type == 'energy' || data.type == 'water')
+        && data.lat is number
+        && data.lng is number
+        && data.status is string && (data.status == 'ok' || data.status == 'warn' || data.status == 'crit');
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'name', 'role', 'lat', 'lng', 'status'])
+        && data.keys().size() == 6
+        && data.id is string && data.id.size() <= 128
+        && data.name is string && data.name.size() <= 128
+        && data.role is string && data.role.size() <= 128
+        && data.lat is number
+        && data.lng is number
+        && data.status is string && (data.status == 'online' || data.status == 'offline');
+    }
+
+    function isValidMetricGroup(data) {
+      return data.keys().hasAll(['water', 'temp', 'air', 'power'])
+        && data.keys().size() == 4
+        && data.water is map
+        && data.temp is map
+        && data.air is map
+        && data.power is map;
+    }
+
+    function isValidLog(data) {
+      return data.keys().hasAll(['timestamp', 'source', 'message', 'type'])
+        && data.keys().size() == 4
+        && data.timestamp is string && data.timestamp.size() <= 64
+        && data.source is string && data.source.size() <= 128
+        && data.message is string && data.message.size() <= 1024
+        && data.type is string && (data.type == 'info' || data.type == 'warn' || data.type == 'error');
+    }
+
+    // --- Collection Matches ---
+
+    // 1. Devices Collection
+    match /devices/{deviceId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() 
+        && isValidId(deviceId) 
+        && deviceId == incoming().id
+        && isValidDevice(incoming());
+      allow update: if isSignedIn()
+        && isValidDevice(incoming())
+        && deviceId == incoming().id
+        && (
+          isAdmin() ||
+          incoming().diff(existing()).affectedKeys().hasAny(['status', 'lat', 'lng'])
+        );
+      allow delete: if isAdmin();
+    }
+
+    // 2. Users (Operators Location Tracking)
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && isValidId(userId)
+        && userId == incoming().id
+        && (userId == request.auth.uid || isAdmin())
+        && isValidUser(incoming());
+      allow update: if isSignedIn()
+        && userId == incoming().id
+        && isValidUser(incoming())
+        && (userId == request.auth.uid || isAdmin())
+        && (
+          isAdmin() ||
+          incoming().diff(existing()).affectedKeys().hasAny(['lat', 'lng', 'status'])
+        );
+      allow delete: if isAdmin();
+    }
+
+    // 3. Telemetry Metrics Singleton
+    match /metrics/{metricId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn()
+        && isValidId(metricId)
+        && (metricId == 'all')
+        && isValidMetricGroup(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // 4. Incident & Activity Logs
+    match /logs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && isValidId(logId)
+        && isValidLog(incoming());
+      allow update, delete: if isAdmin();
+    }
+  }
+}

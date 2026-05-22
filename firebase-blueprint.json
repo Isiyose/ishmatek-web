@@ -1,0 +1,87 @@
+{
+  "entities": {
+    "device": {
+      "title": "Device",
+      "description": "An IoT and PLC environmental device or telemetry emitter.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique string key for devices" },
+        "name": { "type": "string", "description": "User readable display name" },
+        "type": { "type": "string", "description": "Resource type air/water/energy" },
+        "lat": { "type": "number", "description": "PLC coordinate latitude value" },
+        "lng": { "type": "number", "description": "PLC coordinate longitude value" },
+        "status": { "type": "string", "description": "Status level state: ok/warn/crit" }
+      },
+      "required": ["id", "name", "type", "lat", "lng", "status"]
+    },
+    "user": {
+      "title": "User",
+      "description": "Interactive logged in device operator or system technician.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Auth or virtual string identifier key" },
+        "name": { "type": "string", "description": "Full display alias" },
+        "role": { "type": "string", "description": "Functional occupation assignment" },
+        "lat": { "type": "number", "description": "Last registered browser latitude track" },
+        "lng": { "type": "number", "description": "Last registered browser longitude track" },
+        "status": { "type": "string", "description": "Activity state: online/offline" }
+      },
+      "required": ["id", "name", "role", "lat", "lng", "status"]
+    },
+    "metricsSeries": {
+      "title": "Metrics Series",
+      "description": "Grid variable series tracking for dashboard charts.",
+      "type": "object",
+      "properties": {
+        "value": { "type": "number", "description": "Recent telemetry measurement" },
+        "history": { "type": "array", "description": "Array containing telemetry values" },
+        "min": { "type": "number", "description": "Lowest nominal configuration gauge" },
+        "max": { "type": "number", "description": "Highest safety threshold boundary" },
+        "unit": { "type": "string", "description": "Measurement label" }
+      },
+      "required": ["value", "history", "min", "max", "unit"]
+    },
+    "metricGroup": {
+      "title": "Metric Group",
+      "description": "Aggregated resource telemetry gauges.",
+      "type": "object",
+      "properties": {
+        "water": { "type": "object", "description": "Water metrics flow" },
+        "temp": { "type": "object", "description": "Temperature readings" },
+        "air": { "type": "object", "description": "Carbon/Air counts" },
+        "power": { "type": "object", "description": "Power grid consumption" }
+      },
+      "required": ["water", "temp", "air", "power"]
+    },
+    "systemLog": {
+      "title": "System Log",
+      "description": "Audit sequence records logging infrastructure activity.",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "description": "Exact ISO 8601 creation string" },
+        "source": { "type": "string", "description": "Emitting subsystem name" },
+        "message": { "type": "string", "description": "Description parameter" },
+        "type": { "type": "string", "description": "Semantic type: info/warn/error" }
+      },
+      "required": ["timestamp", "source", "message", "type"]
+    }
+  },
+  "firestore": {
+    "/devices/{deviceId}": {
+      "schema": "device",
+      "description": "List of tracked device PLC units."
+    },
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "Registered and local live operator traces."
+    },
+    "/metrics/all": {
+      "schema": "metricGroup",
+      "description": "Unified reactive metrics dataset representation."
+    },
+    "/logs/{logId}": {
+      "schema": "systemLog",
+      "description": "Shared real-time diagnostic system logs list."
+    }
+  }
+}
