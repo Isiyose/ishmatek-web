@@ -72,19 +72,7 @@ export default function App() {
           return true;
         }
       }
-
-      const userData = { 
-        name: u.includes('@') ? u.split('@')[0] : u, 
-        role: 'Senior Operator',
-        lat: coords?.lat,
-        lng: coords?.lng,
-        lastSeen: 'Active now',
-        status: 'online'
-      };
-      setUser(userData);
-      setIsLoggedIn(true);
-      localStorage.setItem('nexus_user', JSON.stringify(userData));
-      return true;
+      return false;
     }
     return false;
   };

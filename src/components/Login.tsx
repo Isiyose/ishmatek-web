@@ -65,15 +65,8 @@ export default function Login({ onLogin }: { onLogin: (u: string, p: string, coo
         return;
       }
       
-      // Simulated delay for UI
-      setTimeout(() => {
-        if (email && password) {
-          onLogin(email, password, coords);
-        } else {
-          setError('Invalid credentials');
-        }
-        setIsEmailLoading(false);
-      }, 1000);
+      setError('Invalid username/email or password. Please use credentials provided by your administrator.');
+      setIsEmailLoading(false);
     } catch (err: any) {
       setError(err.message || 'Location verification failed.');
       setIsEmailLoading(false);
