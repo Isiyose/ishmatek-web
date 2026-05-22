@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { 
   Database, 
 } from 'lucide-react';
-import { TabType, DashboardState } from './types';
+import { TabType, DashboardState, seedDefaultUsers } from './types';
 import Overview from './components/Overview';
 import Configuration from './components/Configuration';
 import Alerts from './components/Alerts';
@@ -24,6 +24,8 @@ import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useSettings } from './contexts/SettingsContext';
 import { useTranslation } from './lib/i18n';
+
+seedDefaultUsers();
 
 export default function App() {
   const { language } = useSettings();
@@ -48,18 +50,31 @@ export default function App() {
 
   const handleLogin = (u: string, p: string, coords?: { lat: number, lng: number }) => {
     if (u && p) {
-      const userData = { 
-        name: u.includes('@') ? u.split('@')[0] : u, 
-        role: 'Senior Operator',
-        lat: coords?.lat,
-        lng: coords?.lng,
-        lastSeen: 'Active now',
-        status: 'online'
-      };
-      setUser(userData);
-      setIsLoggedIn(true);
-      localStorage.setItem('nexus_user', JSON.stringify(userData));
-      return true;
+      const savedUsers = localStorage.getItem('nexus_admin_users');
+      if (savedUsers) {
+        const adminUsers = JSON.parse(savedUsers);
+        const matched = adminUsers.find(
+          (user: any) =>
+            (user.email === u || user.username === u) &&
+            user.password === p &&
+            user.status === 'Active'
+        );
+        if (matched) {
+          const userData = {
+            name: matched.name,
+            role: matched.role,
+            lat: coords?.lat,
+            lng: coords?.lng,
+            lastSeen: 'Active now',
+            status: 'online'
+          };
+          setUser(userData);
+          setIsLoggedIn(true);
+          localStorage.setItem('nexus_user', JSON.stringify(userData));
+          return true;
+        }
+      }
+      return false;
     }
     return false;
   };

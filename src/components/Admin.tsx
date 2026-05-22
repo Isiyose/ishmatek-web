@@ -1,8 +1,8 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTranslation } from '../lib/i18n';
-import { User, TabType } from '../types';
-import { UserPlus, Shield, Mail, Trash2, Edit2, Check, X, Clock, Activity } from 'lucide-react';
+import { User, TabType, DEFAULT_USERS } from '../types';
+import { UserPlus, Shield, Mail, Trash2, Edit2, Check, X, Clock, Activity, Eye, EyeOff } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const ALL_TABS: TabType[] = [
@@ -15,44 +15,14 @@ export default function Admin() {
   const { language } = useSettings();
   const t = useTranslation(language);
 
-  const [users, setUsers] = useState<User[]>([
-    { 
-      id: '1', 
-      name: 'A. Kamau', 
-      role: 'Super Admin', 
-      email: 'a.kamau@ishmatek.com',
-      permissions: [...ALL_TABS],
-      status: 'Active',
-      lastLogin: '2 mins ago'
-    },
-    { 
-      id: '2', 
-      name: 'J. Uwimana', 
-      role: 'Technician', 
-      email: 'j.uwimana@ishmatek.com',
-      permissions: ['overview', 'monitor', 'registry', 'floormap'],
-      status: 'Active',
-      lastLogin: '1 hour ago'
-    },
-    { 
-      id: '3', 
-      name: 'M. Nzabonimpa', 
-      role: 'Operator', 
-      email: 'm.nzabonimpa@ishmatek.com',
-      permissions: ['overview', 'monitor', 'alerts'],
-      status: 'Inactive',
-      lastLogin: '2 days ago'
-    },
-    { 
-      id: '4', 
-      name: 'S. Ishimwe', 
-      role: 'Admin', 
-      email: 's.ishimwe@ishmatek.com',
-      permissions: ['overview', 'monitor', 'admin', 'settings'],
-      status: 'Active',
-      lastLogin: 'Just now'
-    },
-  ]);
+  const [users, setUsers] = useState<User[]>(() => {
+    const saved = localStorage.getItem('nexus_admin_users');
+    return saved ? JSON.parse(saved) : DEFAULT_USERS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('nexus_admin_users', JSON.stringify(users));
+  }, [users]);
 
   const [editingPermissions, setEditingPermissions] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,10 +32,13 @@ export default function Admin() {
   
   const [formData, setFormData] = useState({
     name: '',
+    username: '',
+    password: '',
     role: 'User' as User['role'],
     email: '',
     status: 'Active' as User['status'],
   });
+  const [showFormPassword, setShowFormPassword] = useState(false);
 
   const togglePermission = (userId: string, tab: TabType) => {
     setUsers(prev => prev.map(user => {
@@ -84,14 +57,16 @@ export default function Admin() {
 
   const handleOpenAddModal = () => {
     setModalMode('add');
-    setFormData({ name: '', role: 'User', email: '', status: 'Active' });
+    setFormData({ name: '', username: '', password: '', role: 'User', email: '', status: 'Active' });
+    setShowFormPassword(false);
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (user: User) => {
     setModalMode('edit');
     setSelectedUserId(user.id);
-    setFormData({ name: user.name, role: user.role, email: user.email, status: user.status });
+    setFormData({ name: user.name, username: user.username, password: user.password, role: user.role, email: user.email, status: user.status });
+    setShowFormPassword(false);
     setIsModalOpen(true);
   };
 
@@ -107,11 +82,13 @@ export default function Admin() {
       const newUser: User = {
         id: Math.random().toString(36).substr(2, 9),
         name: formData.name,
+        username: formData.username,
+        password: formData.password,
         role: formData.role,
         email: formData.email,
         status: formData.status,
         lastLogin: 'Never',
-        permissions: ['overview'] // Default permissions
+        permissions: ['overview']
       };
       setUsers(prev => [...prev, newUser]);
     } else if (selectedUserId) {
@@ -301,6 +278,37 @@ export default function Admin() {
                   className="w-full bg-bg-2 border border-border-main rounded-lg px-3 py-2 text-sm focus:border-nexus-blue outline-none transition-colors"
                   placeholder="name@company.com"
                 />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">{t('username')}</label>
+                <input 
+                  required
+                  type="text" 
+                  value={formData.username}
+                  onChange={e => setFormData(f => ({ ...f, username: e.target.value }))}
+                  className="w-full bg-bg-2 border border-border-main rounded-lg px-3 py-2 text-sm focus:border-nexus-blue outline-none transition-colors"
+                  placeholder="e.g. john.doe"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">{t('password')}</label>
+                <div className="relative">
+                  <input 
+                    required
+                    type={showFormPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={e => setFormData(f => ({ ...f, password: e.target.value }))}
+                    className="w-full bg-bg-2 border border-border-main rounded-lg px-3 py-2 text-sm focus:border-nexus-blue outline-none transition-colors pr-10"
+                    placeholder="Set login password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowFormPassword(v => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main transition-colors"
+                  >
+                    {showFormPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
